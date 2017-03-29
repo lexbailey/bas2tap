@@ -58,7 +58,7 @@ int x_strnicmp (char *_S1, char *_S2, int _Len)                                 
 #define x_log2(_X)                (log (_X) / log (2.0))                     /* If your compiler doesn't know the 'log2' function */
 #endif
 
-#define __DEBUG__
+//#define __DEBUG__
 
 typedef unsigned char  byte;
 #ifndef FALSE
@@ -294,6 +294,7 @@ bool  DoCheckSyntax   = TRUE;
 bool  TokenBracket    = FALSE;
 bool  HandlingDEFFN   = FALSE;                                                                         /* Exceptional instruction */
 bool  InsideDEFFN     = FALSE;
+bool  TokenizeREM     = FALSE;
 #define DEFFN           0xCE
 FILE *ErrStream;
 
@@ -800,7 +801,7 @@ int PrepareLine (char *LineIn, int FileLineNo, char **FirstToken)
       StillOk = FALSE;
     else
     {
-      if (!DoingREM)
+      if (!DoingREM && !TokenizeREM)
         if (!x_strnicmp (IndexIn, " REM ", 5) ||                                                 /* Going through REM statement ? */
             !x_strnicmp (IndexIn, ":REM ", 5))
           DoingREM = TRUE;                                                          /* Signal: copy anything and everything ASCII */
@@ -2828,7 +2829,7 @@ bool CheckSyntax (int BasicLineNo, byte *Line)
   {
     StatementNo ++;
     Keyword = *(StrippedIndex ++);
-    if (Keyword == 0xEA)                                                                                               /* 'REM' ? */
+    if (Keyword == 0xEA && (!TokenizeREM))                                                                             /* 'REM' ? */
       return (TRUE);                                                                        /* Then we're done checking this line */
     if (TokenMap[Keyword].TokenType != 0 && TokenMap[Keyword].TokenType != 1 && TokenMap[Keyword].TokenType != 2)     /* (Sanity) */
     {
@@ -3036,6 +3037,8 @@ int main (int argc, char **argv)
                    }
                    strncpy (TapeHeader.HName, argv[Cnt] + 2, strlen (argv[Cnt] + 2));
                    break;
+        case 'r' : TokenizeREM = TRUE;
+                   break;
         default  : fprintf (ErrStream, "Unknown switch \'%c\'\n", argv[Cnt][1]);
       }
     else if (FileNameIn[0] == '\0')
@@ -3051,7 +3054,7 @@ int main (int argc, char **argv)
     printf ("\nBAS2TAP v2.6 by Martijn van der Heide of ThunderWare Research Center\n\n");
   if (!AllOk)
   {
-    printf ("Usage: BAS2TAP [-q] [-w] [-e] [-c] [-aX] [-sX] FileIn [FileOut]\n");
+    printf ("Usage: BAS2TAP [-q] [-w] [-e] [-c] [-aX] [-sX] [-r] FileIn [FileOut]\n");
     printf ("       -q = quiet: no banner, no progress indication\n");
     printf ("       -w = suppress generation of warnings\n");
     printf ("       -e = write errors to stdout in stead of stderr channel\n");
@@ -3059,6 +3062,7 @@ int main (int argc, char **argv)
     printf ("       -n = disable syntax checking\n");
     printf ("       -a = set auto-start line in BASIC header\n");
     printf ("       -s = set \"filename\" in BASIC header\n");
+    printf ("       -r = Tokenize REM statements (e.g. Required for kempston centronics interface config 'COPY : REM CHR$ 0')\n");
     exit (1);
   }
   if (FileNameOut[0] == '\0')
@@ -3173,7 +3177,7 @@ int main (int argc, char **argv)
                           HandlingDEFFN = TRUE;
                           InsideDEFFN = FALSE;
                         }
-                        if (Token == 0xEA)                                                              /* Special exception; REM */
+                        if (Token == 0xEA && (!TokenizeREM))                                            /* Special exception; REM */
                           while (*BasicIndex)                                 /* Simply copy over the remaining part of the line, */
                                                                                        /* disregarding token or number expansions */
                                                                   /* As brackets aren't tested for, the match counting stops here */
