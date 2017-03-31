@@ -3,8 +3,6 @@
 /* Executable   : BAS2TAP.EXE                                                                                                     */
 /* Doc file     : BAS2TAP.DOC                                                                                                     */
 /* Version type : Single file                                                                                                     */
-/* Last changed : 20-01-2013  16:00                                                                                               */
-/* Update count : 18                                                                                                              */
 /* OS type      : Generic                                                                                                         */
 /*                Watcom C = wcl386 -mf -fp3 -fpi -3r -oxnt -w4 -we bas2tap.c                                                     */
 /*                MS C     = cl /Ox /G2 /AS bas2tap.c /F 1000                                                                     */
@@ -16,6 +14,7 @@
 /* Notes        : There's a check for a define "__DEBUG__", which generates tons of output if defined.                            */
 /*                                                                                                                                */
 /*                Copyleft (C) 1998-2013 ThunderWare Research Center, written by Martijn van der Heide.                           */
+/*                (And also Daniel Bailey, 2017, added a missing feature)                                                         */
 /*                                                                                                                                */
 /*                This program is free software; you can redistribute it and/or                                                   */
 /*                modify it under the terms of the GNU General Public License                                                     */
@@ -3050,8 +3049,6 @@ int main (int argc, char **argv)
   }
   if (FileNameIn[0] == '\0')                                                                         /* We do need an input file! */
     AllOk = FALSE;
-  if (!Quiet || !AllOk)
-    printf ("\nBAS2TAP v2.6 by Martijn van der Heide of ThunderWare Research Center\n\n");
   if (!AllOk)
   {
     printf ("Usage: BAS2TAP [-q] [-w] [-e] [-c] [-aX] [-sX] [-r] FileIn [FileOut]\n");
